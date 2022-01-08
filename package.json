@@ -1,0 +1,11 @@
+{
+  "name": "fake-server",
+  "version": "1.0.0",
+  "description": "fake-server for api",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "Ishita Mengi",
+  "license": "ISC"
+}
