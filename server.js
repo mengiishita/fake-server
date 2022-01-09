@@ -1,4 +1,5 @@
 const jsonServer = require('json-server');
+const url = require("url");
 const server = jsonServer.create();
 const router = jsonServer.router('db.json');
 const middlewares = jsonServer.defaults();
@@ -6,8 +7,9 @@ const port = process.env.PORT || 5000;
 
 router.render = (req, res) => {
     const data = res.locals.data;
-  
-    if (!req.originalUrl.includes("items")) {
+    const isItemsExists = req.originalUrl.includes("items");
+    const isFiltersExists = req.originalUrl.includes("filters");
+    if (!isItemsExists) {
       res.json({
         meta: {
           totalCount: data.length,
@@ -17,21 +19,21 @@ router.render = (req, res) => {
       return;
     }
   
-    const brands = {};
+    const allCompanies = {};
     const allTags = {};
-    const items = {};
+    const allTypes = {};
   
     for (let i = 0; i < data.length; i++) {
-      if (brands[data[i].manufacturer]) {
-        brands[data[i].manufacturer] += 1;
+      if (allCompanies[data[i].manufacturer]) {
+        allCompanies[data[i].manufacturer] += 1;
       } else {
-        brands[data[i].manufacturer] = 1;
+        allCompanies[data[i].manufacturer] = 1;
       }
   
-      if (items[data[i].itemType]) {
-        items[data[i].itemType] += 1;
+      if (allTypes[data[i].itemType]) {
+        allTypes[data[i].itemType] += 1;
       } else {
-        items[data[i].itemType] = 1;
+        allTypes[data[i].itemType] = 1;
       }
   
       for (let j = 0; j < data[i].tags.length; j++) {
@@ -45,7 +47,7 @@ router.render = (req, res) => {
   
     const companies = [
       { name: "All", count: data.length },
-      ...Object.entries(brands).map((item) => ({
+      ...Object.entries(allCompanies).map((item) => ({
         name: item[0],
         count: item[1],
       })),
@@ -61,7 +63,7 @@ router.render = (req, res) => {
   
     const types = [
       { name: "All", count: data.length },
-      ...Object.entries(items).map((item) => ({
+      ...Object.entries(allTypes).map((item) => ({
         name: item[0],
         count: item[1],
       })),
@@ -77,8 +79,7 @@ router.render = (req, res) => {
     const index = (page - 1) * perPage;
     const dataItems =
       data.length < 16 ? data : data.slice(index, index + perPage);
-  
-    if (req.originalUrl.includes("filters")) {
+      if (isFiltersExists) {
       return res.json({
         data: {
           companies,
